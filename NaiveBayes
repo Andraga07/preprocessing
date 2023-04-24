@@ -1,0 +1,43 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+
+# load data
+data = pd.read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data", header=None)
+
+# pisahkan atribut dan kelas
+X = data.iloc[:, :-1].values
+y = data.iloc[:, -1].values
+
+# bagi data menjadi data latih dan data uji
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# hitung nilai prior untuk setiap kelas
+classes, counts = np.unique(y_train, return_counts=True)
+prior = counts / len(y_train)
+
+# hitung nilai likelihood untuk setiap atribut pada setiap kelas
+likelihood = {}
+for c in classes:
+    likelihood[c] = []
+    for i in range(X_train.shape[1]):
+        values, counts = np.unique(X_train[y_train == c, i], return_counts=True)
+        likelihood[c].append(dict(zip(values, counts / len(y_train[y_train == c]))))
+
+# klasifikasi data uji
+predictions = []
+for x in X_test:
+    posteriors = []
+    for c in classes:
+        posterior = np.log(prior[c])
+        for i, xi in enumerate(x):
+            if xi in likelihood[c][i]:
+                posterior += np.log(likelihood[c][i][xi])
+            else:
+                posterior += np.log(1e-6)
+        posteriors.append(posterior)
+    predictions.append(classes[np.argmax(posteriors)])
+
+# hitung akurasi
+accuracy = np.mean(predictions == y_test)
+print("Akurasi:", accuracy)
