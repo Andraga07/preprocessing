@@ -1,0 +1,23 @@
+import pandas as pd
+
+# Baca data dari file csv
+df = pd.read_csv('data.csv')
+
+# Menghapus kolom yang tidak diperlukan
+df = df.drop(['kolom_a', 'kolom_b'], axis=1)
+
+# Mengganti nilai null dengan nilai median
+median = df['kolom_c'].median()
+df['kolom_c'].fillna(median, inplace=True)
+
+# Mengganti nilai kategorikal dengan nilai numerik
+df['kolom_d'] = pd.factorize(df['kolom_d'])[0]
+
+# Mengubah tipe data kolom_e menjadi datetime
+df['kolom_e'] = pd.to_datetime(df['kolom_e'])
+
+# Menormalisasi data pada kolom_f
+df['kolom_f'] = (df['kolom_f'] - df['kolom_f'].mean()) / df['kolom_f'].std()
+
+# Menyimpan data yang telah dipreprocessing ke dalam file csv
+df.to_csv('data_preprocessed.csv', index=False)
